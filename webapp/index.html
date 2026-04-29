@@ -7,6 +7,8 @@
     <meta name="description" content="SavePulse connects blood donors with patients in emergencies. Find compatible donors near you instantly.">
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
 
@@ -21,6 +23,11 @@
         <div class="loader-drop">🩸</div>
         <p>Please wait...</p>
     </div>
+
+    <!-- Audio alert for SOS -->
+    <audio id="sos-audio" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgiKqsmGRFPFyFqKiXaEtEX4ammJhsUUxfiaCVl3BYU2GQnJOTdF5XX4yYj5F4ZF1fipaOj3pnYWCKk4uMfmtlYoiQiIl/b2lkhoqFhYB0bWhkhYmEgoBzb2tkhIeCgIA=" type="audio/wav">
+    </audio>
 
     <div id="app">
 
@@ -108,9 +115,25 @@
                         <span class="pulse-dot"></span>
                         <span id="stats-text">Loading...</span>
                     </div>
+                    <!-- Notification Bell -->
+                    <button class="notif-bell" id="notif-bell-btn" onclick="app.requestNotificationPermission()" title="Enable notifications">
+                        🔔
+                        <span class="notif-badge" id="notif-badge"></span>
+                    </button>
+                    <!-- Theme Toggle -->
+                    <button class="theme-toggle-btn" id="theme-toggle" onclick="app.toggleTheme()" title="Toggle theme">
+                        🌗
+                    </button>
                     <button class="btn secondary outline" onclick="app.logout()">Logout</button>
                 </div>
             </header>
+
+            <!-- Heartbeat EKG Bar -->
+            <div class="heartbeat-bar" id="heartbeat-bar">
+                <svg viewBox="0 0 600 50" preserveAspectRatio="none">
+                    <polyline points="0,25 30,25 40,25 45,10 50,40 55,5 60,45 65,25 75,25 100,25 130,25 140,25 145,10 150,40 155,5 160,45 165,25 175,25 200,25 230,25 240,25 245,10 250,40 255,5 260,45 265,25 275,25 300,25 330,25 340,25 345,10 350,40 355,5 360,45 365,25 375,25 400,25 430,25 440,25 445,10 450,40 455,5 460,45 465,25 475,25 500,25 530,25 540,25 545,10 550,40 555,5 560,45 565,25 575,25 600,25" />
+                </svg>
+            </div>
 
             <!-- DONOR DASHBOARD -->
             <div id="donor-dashboard" style="display: none;" class="fade-in">
@@ -162,8 +185,39 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Blood Compatibility Visualizer -->
+                <div class="glass-card compat-viz" id="compat-viz-section">
+                    <h3>🧬 Blood Compatibility Map</h3>
+                    <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">Your blood type can donate to these groups</p>
+                    <div class="compat-grid" id="compat-grid"></div>
+                </div>
+
+                <!-- Impact Tracker -->
+                <div class="glass-card impact-section" id="impact-section">
+                    <h3>🏆 Your Impact</h3>
+                    <div class="impact-stats">
+                        <div class="impact-stat">
+                            <span class="impact-num" id="responses-count">0</span>
+                            <span class="impact-label">SOS Responded</span>
+                        </div>
+                        <div class="impact-stat">
+                            <span class="impact-num" id="lives-saved-count">0</span>
+                            <span class="impact-label">Lives Impacted</span>
+                        </div>
+                        <div class="impact-stat">
+                            <span class="impact-num" id="days-active-count">0</span>
+                            <span class="impact-label">Days Active</span>
+                        </div>
+                    </div>
+                    <h4 style="font-size:13px; font-weight:600; margin-bottom:12px; color:var(--text-muted);">BADGES</h4>
+                    <div class="badges-row" id="badges-row">
+                        <!-- Badges rendered by JS -->
+                    </div>
+                </div>
+
                 <!-- Active SOS Requests panel -->
-                <div class="glass-card sos-active-panel" style="margin-top:20px;">
+                <div class="glass-card sos-active-panel" id="sos-panel" style="margin-top:20px;">
                     <div class="results-header">
                         <h3>🆘 Active Emergency Requests</h3>
                         <span class="result-count" id="sos-live-badge">Live</span>
@@ -172,6 +226,8 @@
                         <p class="no-sos">Loading emergency requests...</p>
                     </div>
                 </div>
+
+            </div>
 
             <div id="receiver-dashboard" style="display: none;" class="fade-in">
 
@@ -182,6 +238,10 @@
                         <div>
                             <h3>Emergency Request</h3>
                             <p>Need blood urgently? Send an SOS to all available donors.</p>
+                            <div class="location-share-info" id="location-status" style="display:none;">
+                                <span>📍</span>
+                                <span id="location-status-text">Fetching your location...</span>
+                            </div>
                         </div>
                     </div>
                     <button class="btn sos-btn" onclick="app.sendSOS()" id="sos-btn">
@@ -236,6 +296,8 @@
 
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <!-- Leaflet JS for maps -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // Generate floating blood drops
         const container = document.getElementById('blood-drops-bg');
