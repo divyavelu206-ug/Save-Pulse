@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SavePulse — Blood Donation Finder</title>
+    <meta name="description" content="SavePulse connects blood donors with patients in emergencies. Find compatible donors near you instantly.">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Floating blood drops background -->
+    <div class="blood-drops" id="blood-drops-bg"></div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Global Loader -->
+    <div class="global-loader" id="global-loader">
+        <div class="loader-drop">🩸</div>
+        <p>Please wait...</p>
+    </div>
+
+    <div id="app">
+
+        <!-- =========== AUTH SECTION =========== -->
+        <section id="auth-section" class="fade-in">
+
+            <div class="auth-logo">
+                <div class="logo-icon">🩸</div>
+                <h1>SavePulse</h1>
+                <p>Connect donors. Save lives. Every second counts.</p>
+            </div>
+
+            <div class="glass-card">
+                <div class="tabs">
+                    <button class="tab active" onclick="app.showLogin()">Login</button>
+                    <button class="tab" onclick="app.showRegister()">Register</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="login-form">
+                    <div class="input-group">
+                        <label>Contact Number</label>
+                        <input type="text" id="login-contact" placeholder="Enter your number" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" id="login-password" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="btn primary">Login →</button>
+                </form>
+
+                <!-- Register Form -->
+                <form id="register-form" style="display: none;">
+                    <div class="input-group">
+                        <label>Full Name</label>
+                        <input type="text" id="reg-name" placeholder="Your full name" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Contact Number</label>
+                        <input type="text" id="reg-contact" placeholder="10-digit mobile number" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Location / City</label>
+                        <input type="text" id="reg-location" placeholder="e.g. Chennai, Mumbai" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" id="reg-password" placeholder="Create a password" required>
+                    </div>
+                    <div class="input-group">
+                        <label>I am a</label>
+                        <select id="reg-role" onchange="app.toggleRoleSpecifics()">
+                            <option value="RECEIVER">🤲 Receiver — I need blood</option>
+                            <option value="DONOR">❤️ Donor — I want to donate</option>
+                        </select>
+                    </div>
+                    <div class="input-group" id="reg-blood-group-group">
+                        <label>Blood Group</label>
+                        <select id="reg-blood-group" required>
+                            <option value="A+">A+</option>
+                            <option value="A-">A−</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B−</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB−</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O−</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn primary">Create Account →</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- =========== DASHBOARD SECTION =========== -->
+        <section id="dashboard-section" style="display: none;" class="fade-in">
+
+            <header class="dashboard-header glass-card">
+                <div>
+                    <h2>Hey, <span id="user-name-display"></span> 👋</h2>
+                    <p class="role-badge" id="user-role-display"></p>
+                </div>
+                <div class="header-right">
+                    <div class="stats-pill" id="live-stats">
+                        <span class="pulse-dot"></span>
+                        <span id="stats-text">Loading...</span>
+                    </div>
+                    <button class="btn secondary outline" onclick="app.logout()">Logout</button>
+                </div>
+            </header>
+
+            <!-- DONOR DASHBOARD -->
+            <div id="donor-dashboard" style="display: none;" class="fade-in">
+
+                <!-- Stats Row -->
+                <div class="stats-row">
+                    <div class="stat-card glass-card">
+                        <div class="stat-icon">🧬</div>
+                        <div class="stat-info">
+                            <span class="stat-num" id="total-donors-count">—</span>
+                            <span class="stat-label">Total Donors</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <span class="stat-num" id="available-donors-count">—</span>
+                            <span class="stat-label">Available Now</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <div class="stat-icon">🆘</div>
+                        <div class="stat-info">
+                            <span class="stat-num" id="requests-count">—</span>
+                            <span class="stat-label">Active Requests</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="donor-status-card glass-card">
+                    <div class="blood-type-display">
+                        <div class="blood-type-badge" id="donor-bg"></div>
+                        <div class="blood-type-info">
+                            <h3>Your Blood Type</h3>
+                            <p>You are a registered donor. Thank you for saving lives! 🙏</p>
+                        </div>
+                    </div>
+                    <div class="availability-section">
+                        <div class="availability-label">
+                            <span>Donation Availability</span>
+                            <span>Toggle to let receivers find you</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:14px;">
+                            <span id="availability-status"></span>
+                            <label class="switch">
+                                <input type="checkbox" id="availability-toggle" onchange="app.updateAvailability()">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <!-- Active SOS Requests panel -->
+                <div class="glass-card sos-active-panel" style="margin-top:20px;">
+                    <div class="results-header">
+                        <h3>🆘 Active Emergency Requests</h3>
+                        <span class="result-count" id="sos-live-badge">Live</span>
+                    </div>
+                    <div id="sos-request-list">
+                        <p class="no-sos">Loading emergency requests...</p>
+                    </div>
+                </div>
+
+            <div id="receiver-dashboard" style="display: none;" class="fade-in">
+
+                <!-- Emergency SOS -->
+                <div class="sos-banner glass-card">
+                    <div class="sos-left">
+                        <div class="sos-icon">🆘</div>
+                        <div>
+                            <h3>Emergency Request</h3>
+                            <p>Need blood urgently? Send an SOS to all available donors.</p>
+                        </div>
+                    </div>
+                    <button class="btn sos-btn" onclick="app.sendSOS()" id="sos-btn">
+                        <span>Send SOS</span>
+                    </button>
+                </div>
+
+                <!-- Search -->
+                <div class="search-section glass-card">
+                    <h3>🔍 Find Blood Donors</h3>
+                    <div class="search-bar">
+                        <select id="search-bg">
+                            <option value="A+">A+</option>
+                            <option value="A-">A−</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B−</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB−</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O−</option>
+                        </select>
+                        <input type="text" id="search-location" placeholder="📍 Filter by city (optional)">
+                        <button class="btn primary" onclick="app.searchDonors()">Search</button>
+                    </div>
+                    <p class="compat-info" id="compat-info"></p>
+                </div>
+
+                <!-- Results -->
+                <div class="results-container glass-card">
+                    <div class="results-header">
+                        <h3>Available Donors</h3>
+                        <span class="result-count" id="result-count"></span>
+                    </div>
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Blood Group</th>
+                                <th>Location</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="donors-list">
+                            <tr><td colspan="4" class="empty-msg">Search to find available donors near you</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script>
+        // Generate floating blood drops
+        const container = document.getElementById('blood-drops-bg');
+        for (let i = 0; i < 18; i++) {
+            const drop = document.createElement('div');
+            drop.className = 'drop';
+            drop.style.left = Math.random() * 100 + 'vw';
+            drop.style.animationDuration = (Math.random() * 12 + 8) + 's';
+            drop.style.animationDelay = (Math.random() * 12) + 's';
+            drop.style.width = (Math.random() * 6 + 4) + 'px';
+            drop.style.height = (Math.random() * 9 + 6) + 'px';
+            container.appendChild(drop);
+        }
+    </script>
+    <script src="app.js"></script>
+</body>
+</html>
