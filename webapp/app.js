@@ -1,12 +1,13 @@
 // Firebase Config
 const firebaseConfig = {
-    apiKey: "AIzaSyCFUhbhUCS-961afEVhnH9GCg8V9SnS5sA",
-    authDomain: "save-pulse-fa3bc.firebaseapp.com",
-    projectId: "save-pulse-fa3bc",
-    storageBucket: "save-pulse-fa3bc.firebasestorage.app",
-    messagingSenderId: "201257821695",
-    appId: "1:201257821695:web:0cab7555e55c27516433ca",
-    measurementId: "G-0JVB26WRJD"
+  apiKey: "AIzaSyCFUhbhUCS-961afEVhnH9GCg8V9SnS5sA",
+  authDomain: "save-pulse-fa3bc.firebaseapp.com",
+  projectId: "save-pulse-fa3bc",
+  storageBucket: "save-pulse-fa3bc.firebasestorage.app",
+  messagingSenderId: "201257821695",
+  appId: "1:201257821695:web:0cab7555e55c27516433ca",
+  measurementId: "G-0JVB26WRJD"
+};
 };
 
 firebase.initializeApp(firebaseConfig);
